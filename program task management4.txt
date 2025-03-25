@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Task Master | Login / Dashboard</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #b3d9d9, #c0e0d9);
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .box {
+      background-color: #6b5ca5;
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      width: 350px;
+      text-align: center;
+      margin: auto;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    }
+
+    input,
+    button {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+    }
+
+    button {
+      background-color: #f5e490;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .dashboard {
+      background-color: #6b5ca5;
+      color: white;
+      border-radius: 15px;
+      padding: 20px;
+      max-width: 720px;
+      margin: auto;
+      display: none;
+      position: relative;
+    }
+
+    .top-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn,
+    .task-btn {
+      padding: 10px;
+      background-color: #f5e490;
+      border-radius: 8px;
+      margin: 5px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .calendar,
+    .tasks,
+    .extras {
+      background: #dcd1f7;
+      color: #333;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+    }
+
+    #msg {
+      color: yellow;
+      font-weight: bold;
+    }
+
+    #notifications,
+    #settingsMenu,
+    #profileBox {
+      background-color: #fff;
+      color: #333;
+      position: absolute;
+      top: 60px;
+      right: 30px;
+      display: none;
+      padding: 10px;
+      border-radius: 10px;
+      width: 220px;
+      box-shadow: 0 0 10px #00000050;
+    }
+
+    #notifications ul {
+      list-style: none;
+      padding-left: 10px;
+    }
+
+    #settingsMenu button {
+      background-color: #6b5ca5;
+      color: white;
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #profileBox {
+      background-color: #fff;
+      color: #333;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+      width: 300px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Login / Signup Box -->
+  <div class="box" id="loginBox">
+    <h2>Task Master Login / Sign Up</h2>
+    <input type="text" id="username" placeholder="Enter your username">
+    <input type="password" id="password" placeholder="Enter your password">
+    <button onclick="signup()">Sign Up</button>
+    <button onclick="login()">Login</button>
+    <p id="msg"></p>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dashboard" id="dashboard">
+    <div class="top-section">
+      <div><strong id="welcome">Welcome, User</strong></div>
+      <div>
+        <button class="btn" onclick="toggleNotifications()">?? Notifications</button>
+        <button class="btn" onclick="toggleSettings()">?? Settings</button>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div id="notifications">
+      <h4>Task Notifications</h4>
+      <ul id="notificationList"></ul>
+    </div>
+
+    <!-- Settings -->
+    <div id="settingsMenu">
+      <button onclick="viewProfile()">View Profile</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Profile Box -->
+    <div id="profileBox"></div>
+
+    <div class="tasks">
+      <h3>Add To-do List Task</h3>
+      <input type="text" id="taskInput" placeholder="Enter task here">
+      <button class="task-btn" onclick="addTask()">? Add Task</button>
+      <ul id="taskList"></ul>
+    </div>
+
+    <div class="calendar">
+      <h3>?? Deadline Heatmap (March 2025)</h3>
+      <p>[Calendar Design Placeholder]</p>
+    </div>
+
+    <div class="extras">
+      <button class="btn">?? Achievement Journal</button>
+      <button class="btn">?? Spin the Task Wheel</button>
+      <button class="btn">?? Procrastinate</button>
+    </div>
+
+    <!-- Removed the Logout button here -->
+  </div>
+
+  <script>
+    // Initialize users array in localStorage if not existing
+    if (!localStorage.getItem('users')) {
+      localStorage.setItem('users', JSON.stringify([]));
+    }
+
+    let tasks = [];
+    let currentUser = localStorage.getItem('loggedInUser');
+
+    if (currentUser) {
+      showDashboard(currentUser);
+    }
+
+    function signup() {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+      let users = JSON.parse(localStorage.getItem('users'));
+
+      if (user && pass) {
+        const existingUser = users.find(u => u.username === user);
+        if (existingUser) {
+          document.getElementById('msg').innerText = 'Username already exists!';
+        } else {
+          users.push({ username: user, password: pass });
+          localStorage.setItem('users', JSON.stringify(users));
+          localStorage.setItem('loggedInUser', user);
+          showDashboard(user);
+          alert('Sign Up Successful!');
+        }
+      } else {
+        document.getElementById('msg').innerText = 'Please enter username and password.';
+      }
+    }
+
+    function login() {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+      let users = JSON.parse(localStorage.getItem('users'));
+
+      const foundUser = users.find(u => u.username === user && u.password === pass);
+
+      if (foundUser) {
+        localStorage.setItem('loggedInUser', user);
+        showDashboard(user);
+        alert('Login Successful!');
+      } else {
+        document.getElementById('msg').innerText = 'Invalid username or password.';
+      }
+    }
+
+    function showDashboard(user) {
+      currentUser = user;
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      document.getElementById('welcome').textContent = `Welcome, ${user}`;
+      updateTaskList();
+    }
+
+    function addTask() {
+      const task = document.getElementById('taskInput').value.trim();
+      if (task) {
+        tasks.push(task);
+        document.getElementById('taskInput').value = '';
+        updateTaskList();
+      }
+    }
+
+    function updateTaskList() {
+      const taskList = document.getElementById('taskList');
+      const notificationList = document.getElementById('notificationList');
+      taskList.innerHTML = '';
+      notificationList.innerHTML = '';
+
+      tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.textContent = task;
+        taskList.appendChild(li);
+
+        const notif = document.createElement('li');
+        notif.textContent = `Reminder: ${task}`;
+        notificationList.appendChild(notif);
+      });
+    }
+
+    function toggleNotifications() {
+      const notifBox = document.getElementById('notifications');
+      notifBox.style.display = notifBox.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleSettings() {
+      const settings = document.getElementById('settingsMenu');
+      settings.style.display = settings.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function viewProfile() {
+      const profileBox = document.getElementById('profileBox');
+      profileBox.innerHTML = `<h3>User Profile</h3><p>Username: ${currentUser}</p>`;
+      profileBox.style.display = 'block';
+      document.getElementById('settingsMenu').style.display = 'none';
+    }
+
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      location.reload();
+    }
+  </script>
+
+</body>
+
+</html>
+1
